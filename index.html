@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Simulation Game Replica</title>
+    <title>3D Simulation Game - Boat Cleaning Pond</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
@@ -24,34 +24,34 @@
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "low-power" });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize for high-DPI displays
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Set the background color to a light gray (similar to the image)
+        // Set the background color to a light gray (similar to the screenshot)
         scene.background = new THREE.Color(0xaaaaaa);
 
-        // Position the camera to mimic the isometric view
-        camera.position.set(10, 10, 10);
+        // Position the camera for an isometric view
+        camera.position.set(6, 6, 6);
         camera.lookAt(0, 0, 0);
 
         // Add basic lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
         scene.add(ambientLight);
 
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(5, 10, 5);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        directionalLight.position.set(3, 5, 3);
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 512; // Lower resolution for better performance
-        directionalLight.shadow.mapSize.height = 512;
+        directionalLight.shadow.mapSize.width = 256; // Lower resolution for performance
+        directionalLight.shadow.mapSize.height = 256;
         scene.add(directionalLight);
 
         // Enable shadows with optimization
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows for better performance
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
-        // Ground
-        const groundGeometry = new THREE.PlaneGeometry(30, 30, 1, 1); // Low segmentation for performance
+        // Island ground (smaller to feel like an island)
+        const groundGeometry = new THREE.CircleGeometry(8, 32); // Circular island
         const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.8 });
         const ground = new THREE.Mesh(groundGeometry, groundMaterial);
         ground.rotation.x = -Math.PI / 2;
@@ -59,120 +59,138 @@
         ground.receiveShadow = true;
         scene.add(ground);
 
-        // River
-        const riverGeometry = new THREE.PlaneGeometry(20, 10, 1, 1);
-        const riverMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.5 });
-        const river = new THREE.Mesh(riverGeometry, riverMaterial);
-        river.rotation.x = -Math.PI / 2;
-        river.position.y = -0.1;
-        river.receiveShadow = true;
-        scene.add(river);
+        // Pond (smaller circular body of water)
+        let pondColor = 0x8b0000; // Start with polluted color (dark red)
+        const pondGeometry = new THREE.CircleGeometry(3, 32);
+        const pondMaterial = new THREE.MeshStandardMaterial({ color: pondColor, roughness: 0.5 });
+        const pond = new THREE.Mesh(pondGeometry, pondMaterial);
+        pond.rotation.x = -Math.PI / 2;
+        pond.position.y = -0.05; // Slightly below the ground
+        pond.receiveShadow = true;
+        scene.add(pond);
 
-        // Canyon walls
-        const canyonShape = new THREE.Shape();
-        canyonShape.moveTo(-10, -5);
-        canyonShape.lineTo(-10, 5);
-        canyonShape.lineTo(-5, 5);
-        canyonShape.lineTo(-5, -5);
-        canyonShape.lineTo(-10, -5);
+        // House (simplified factory-like structure to match the screenshot)
+        const houseGeometry = new THREE.BoxGeometry(2, 1, 2);
+        const houseMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.6 });
+        const house = new THREE.Mesh(houseGeometry, houseMaterial);
+        house.position.set(3, 0.5, 0);
+        house.castShadow = true;
+        house.receiveShadow = true;
+        scene.add(house);
 
-        const extrudeSettings = { depth: 5, bevelEnabled: false };
-        const canyonGeometry = new THREE.ExtrudeGeometry(canyonShape, extrudeSettings);
-        const canyonMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 });
-        const canyonLeft = new THREE.Mesh(canyonGeometry, canyonMaterial);
-        canyonLeft.position.set(0, 0, 0);
-        canyonLeft.castShadow = true;
-        canyonLeft.receiveShadow = true;
-        scene.add(canyonLeft);
+        // Roof with solar panels
+        const roofGeometry = new THREE.PlaneGeometry(2.2, 2.2);
+        const roofMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, metalness: 0.8 });
+        const roof = new THREE.Mesh(roofGeometry, roofMaterial);
+        roof.position.set(3, 1.1, 0);
+        roof.rotation.x = -Math.PI / 2;
+        roof.receiveShadow = true;
+        scene.add(roof);
 
-        const canyonRight = canyonLeft.clone();
-        canyonRight.position.set(10, 0, 0);
-        canyonRight.rotation.y = Math.PI;
-        scene.add(canyonRight);
+        // Chimneys (instead of smokestacks, to make it more house-like)
+        const chimneyGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 8);
+        const chimneyMaterial = new THREE.MeshStandardMaterial({ color: 0x555555 });
+        const chimney1 = new THREE.Mesh(chimneyGeometry, chimneyMaterial);
+        chimney1.position.set(2.5, 1.4, -0.5);
+        chimney1.castShadow = true;
+        scene.add(chimney1);
 
-        // Factory
-        const factoryGeometry = new THREE.BoxGeometry(4, 2, 4);
-        const factoryMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.6 });
-        const factory = new THREE.Mesh(factoryGeometry, factoryMaterial);
-        factory.position.set(8, 1, 2);
-        factory.castShadow = true;
-        factory.receiveShadow = true;
-        scene.add(factory);
+        const chimney2 = chimney1.clone();
+        chimney2.position.set(3.5, 1.4, -0.5);
+        scene.add(chimney2);
 
-        const solarPanelGeometry = new THREE.PlaneGeometry(3, 3);
-        const solarPanelMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, metalness: 0.8 });
-        const solarPanel = new THREE.Mesh(solarPanelGeometry, solarPanelMaterial);
-        solarPanel.position.set(8, 2.1, 2);
-        solarPanel.rotation.x = -Math.PI / 2;
-        solarPanel.receiveShadow = true;
-        scene.add(solarPanel);
-
-        const smokestackGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 8); // Lower segments for performance
-        const smokestackMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
-        const smokestack1 = new THREE.Mesh(smokestackGeometry, smokestackMaterial);
-        smokestack1.position.set(7, 2.5, 1);
-        smokestack1.castShadow = true;
-        scene.add(smokestack1);
-
-        const smokestack2 = smokestack1.clone();
-        smokestack2.position.set(9, 2.5, 1);
-        scene.add(smokestack2);
-
-        // Boat
-        const boatBaseGeometry = new THREE.BoxGeometry(1, 0.3, 0.5);
+        // Boat (cleaning the pond)
+        const boatBaseGeometry = new THREE.BoxGeometry(0.6, 0.2, 0.3);
         const boatBaseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const boatBase = new THREE.Mesh(boatBaseGeometry, boatBaseMaterial);
-        boatBase.position.set(0, 0.2, 0);
+        boatBase.position.set(0, 0.1, 0);
         boatBase.castShadow = true;
         scene.add(boatBase);
 
-        const boatCabinGeometry = new THREE.BoxGeometry(0.5, 0.3, 0.3);
+        const boatCabinGeometry = new THREE.BoxGeometry(0.3, 0.2, 0.2);
         const boatCabinMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
         const boatCabin = new THREE.Mesh(boatCabinGeometry, boatCabinMaterial);
-        boatCabin.position.set(0, 0.5, 0);
+        boatCabin.position.set(0, 0.3, 0);
         boatCabin.castShadow = true;
         scene.add(boatCabin);
 
-        // Tree
-        const treeFoliageGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
+        // Trees (more greenery for the island feel)
+        const treeFoliageGeometry = new THREE.ConeGeometry(0.4, 1.2, 8);
         const treeFoliageMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.9 });
-        const treeFoliage = new THREE.Mesh(treeFoliageGeometry, treeFoliageMaterial);
-        treeFoliage.position.set(-8, 1.5, -2);
-        treeFoliage.castShadow = true;
-        scene.add(treeFoliage);
+        const treeFoliage1 = new THREE.Mesh(treeFoliageGeometry, treeFoliageMaterial);
+        treeFoliage1.position.set(-3, 1.2, 2);
+        treeFoliage1.castShadow = true;
+        scene.add(treeFoliage1);
 
-        const treeTrunkGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 8);
+        const treeTrunkGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 8);
         const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
-        const treeTrunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
-        treeTrunk.position.set(-8, 0.5, -2);
-        treeTrunk.castShadow = true;
-        scene.add(treeTrunk);
+        const treeTrunk1 = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
+        treeTrunk1.position.set(-3, 0.4, 2);
+        treeTrunk1.castShadow = true;
+        scene.add(treeTrunk1);
 
-        // Wind turbine
-        const turbineBaseGeometry = new THREE.CylinderGeometry(0.1, 0.1, 3, 8);
+        // Second tree
+        const treeFoliage2 = treeFoliage1.clone();
+        treeFoliage2.position.set(-2, 1.2, -3);
+        scene.add(treeFoliage2);
+
+        const treeTrunk2 = treeTrunk1.clone();
+        treeTrunk2.position.set(-2, 0.4, -3);
+        scene.add(treeTrunk2);
+
+        // Wind turbine (smaller to fit the island)
+        const turbineBaseGeometry = new THREE.CylinderGeometry(0.05, 0.05, 2, 8);
         const turbineBaseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const turbineBase = new THREE.Mesh(turbineBaseGeometry, turbineBaseMaterial);
-        turbineBase.position.set(-6, 1.5, -4);
+        turbineBase.position.set(-4, 1, 0);
         turbineBase.castShadow = true;
         scene.add(turbineBase);
 
-        const turbineBladesGeometry = new THREE.BoxGeometry(0.1, 2, 0.1);
+        const turbineBladesGeometry = new THREE.BoxGeometry(0.05, 1, 0.05);
         const turbineBladesMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
         const turbineBlades = new THREE.Mesh(turbineBladesGeometry, turbineBladesMaterial);
-        turbineBlades.position.set(-6, 3, -4);
+        turbineBlades.position.set(-4, 2, 0);
         turbineBlades.castShadow = true;
         scene.add(turbineBlades);
+
+        // Small details (mushrooms)
+        const mushroomGeometry = new THREE.SphereGeometry(0.1, 8, 8);
+        const mushroomMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+        const mushroom1 = new THREE.Mesh(mushroomGeometry, mushroomMaterial);
+        mushroom1.position.set(-1, 0.1, 3);
+        scene.add(mushroom1);
+
+        const mushroom2 = mushroom1.clone();
+        mushroom2.position.set(-0.5, 0.1, 2.5);
+        scene.add(mushroom2);
+
+        // Cleaning mechanic
+        let cleaningProgress = 0; // 0 = fully polluted, 1 = fully clean
+        const pollutedColor = new THREE.Color(0x8b0000); // Dark red
+        const cleanColor = new THREE.Color(0x00b7eb); // Blue
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
 
-            // Animate the boat (move it back and forth along the river)
-            boatBase.position.x = Math.sin(Date.now() * 0.001) * 5;
+            // Animate the boat (move in a circular path around the pond)
+            const time = Date.now() * 0.001;
+            boatBase.position.x = Math.sin(time) * 1.5;
+            boatBase.position.z = Math.cos(time) * 1.5;
+            boatBase.rotation.y = -time; // Rotate to face the direction of movement
             boatCabin.position.x = boatBase.position.x;
+            boatCabin.position.z = boatBase.position.z;
+            boatCabin.rotation.y = -time;
 
             // Animate the wind turbine blades
             turbineBlades.rotation.z += 0.05;
+
+            // Cleaning mechanic: Gradually clean the pond as the boat moves
+            if (cleaningProgress < 1) {
+                cleaningProgress += 0.0005; // Adjust speed of cleaning
+                const lerpedColor = pollutedColor.clone().lerp(cleanColor, cleaningProgress);
+                pondMaterial.color = lerpedColor;
+            }
 
             renderer.render(scene, camera);
         }
@@ -186,7 +204,7 @@
             renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         });
 
-        // Optimize for touch devices (basic camera control)
+        // Basic camera controls for desktop and mobile
         let isDragging = false;
         let previousMousePosition = { x: 0, y: 0 };
 
@@ -201,8 +219,8 @@
                     x: e.clientX - previousMousePosition.x,
                     y: e.clientY - previousMousePosition.y
                 };
-                camera.position.x += deltaMove.x * 0.02;
-                camera.position.z += deltaMove.y * 0.02;
+                camera.position.x += deltaMove.x * 0.01;
+                camera.position.z += deltaMove.y * 0.01;
                 camera.lookAt(0, 0, 0);
                 previousMousePosition = { x: e.clientX, y: e.clientY };
             }
@@ -226,8 +244,8 @@
                     x: e.touches[0].clientX - previousMousePosition.x,
                     y: e.touches[0].clientY - previousMousePosition.y
                 };
-                camera.position.x += deltaMove.x * 0.02;
-                camera.position.z += deltaMove.y * 0.02;
+                camera.position.x += deltaMove.x * 0.01;
+                camera.position.z += deltaMove.y * 0.01;
                 camera.lookAt(0, 0, 0);
                 previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
             }
