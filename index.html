@@ -1,140 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Pong Ball</title>
+    <title>3D Simulation Game</title>
     <style>
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #000;
-        }
-        canvas {
-            display: block;
-        }
-        #score {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: white;
-            font-family: Arial, sans-serif;
-            font-size: 20px;
-        }
+        body { margin: 0; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <div id="score">Score: 0</div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
     <script>
-        // Scene setup
+        // Set up the scene, camera, and renderer
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer();
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Game objects
-        const tableGeometry = new THREE.BoxGeometry(20, 0.2, 10);
-        const tableMaterial = new THREE.MeshBasicMaterial({ color: 0x006600 });
-        const table = new THREE.Mesh(tableGeometry, tableMaterial);
-        scene.add(table);
+        // Add a simple cube to the scene
+        const geometry = new THREE.BoxGeometry();
+        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+        const cube = new THREE.Mesh(geometry, material);
+        scene.add(cube);
 
-        const paddleGeometry = new THREE.BoxGeometry(2, 0.2, 0.5);
-        const paddleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const playerPaddle = new THREE.Mesh(paddleGeometry, paddleMaterial);
-        playerPaddle.position.y = 0.3;
-        playerPaddle.position.z = -4.5;
-        scene.add(playerPaddle);
+        // Position the camera
+        camera.position.z = 5;
 
-        const ballGeometry = new THREE.SphereGeometry(0.2, 32, 32);
-        const ballMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
-        scene.add(ball);
-
-        // Camera position
-        camera.position.set(0, 15, 5);
-        camera.lookAt(0, 0, 0);
-
-        // Game variables
-        let ballSpeed = { x: 0.1, y: 0, z: 0.1 };
-        let score = 0;
-        let gameRunning = true;
-
-        // Mouse controls
-        document.addEventListener('mousemove', (event) => {
-            const mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-            playerPaddle.position.x = mouseX * 10;
-            playerPaddle.position.x = Math.max(-9, Math.min(9, playerPaddle.position.x));
-        });
-
-        // Touch controls for mobile
-        document.addEventListener('touchmove', (event) => {
-            event.preventDefault();
-            const touch = event.touches[0];
-            const mouseX = (touch.clientX / window.innerWidth) * 2 - 1;
-            playerPaddle.position.x = mouseX * 10;
-            playerPaddle.position.x = Math.max(-9, Math.min(9, playerPaddle.position.x));
-        }, { passive: false });
-
-        // Game loop
+        // Animation loop
         function animate() {
-            if (!gameRunning) return;
-
             requestAnimationFrame(animate);
-
-            // Ball movement
-            ball.position.x += ballSpeed.x;
-            ball.position.z += ballSpeed.z;
-
-            // Ball collision with walls
-            if (ball.position.x > 9.8 || ball.position.x < -9.8) {
-                ballSpeed.x = -ballSpeed.x;
-            }
-
-            // Ball collision with paddle
-            if (ball.position.z < -4 && ball.position.z > -5) {
-                if (ball.position.x > playerPaddle.position.x - 1 && 
-                    ball.position.x < playerPaddle.position.x + 1) {
-                    ballSpeed.z = -ballSpeed.z;
-                    score++;
-                    document.getElementById('score').textContent = `Score: ${score}`;
-                    // Increase speed slightly with each hit
-                    ballSpeed.x *= 1.05;
-                    ballSpeed.z *= 1.05;
-                }
-            }
-
-            // Game over condition
-            if (ball.position.z < -6) {
-                gameRunning = false;
-                alert(`Game Over! Score: ${score}`);
-            }
-
-            // Ball bounce off top
-            if (ball.position.z > 4.8) {
-                ballSpeed.z = -ballSpeed.z;
-            }
-
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
             renderer.render(scene, camera);
         }
-
-        // Start game
-        function startGame() {
-            ball.position.set(0, 0.2, 0);
-            ballSpeed = { x: 0.1, y: 0, z: 0.1 };
-            score = 0;
-            gameRunning = true;
-            document.getElementById('score').textContent = `Score: ${score}`;
-            animate();
-        }
-
-        // Window resize handler
-        window.addEventListener('resize', () => {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
-
-        startGame();
+        animate();
     </script>
 </body>
 </html>
