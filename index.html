@@ -1,10 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Simulation Game</title>
+    <title>3D Simulation Game Replica</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { margin: 0; }
-        canvas { display: block; }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
     </style>
 </head>
 <body>
@@ -13,27 +23,219 @@
         // Set up the scene, camera, and renderer
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "low-power" });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Optimize for high-DPI displays
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Add a simple cube to the scene
-        const geometry = new THREE.BoxGeometry();
-        const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-        const cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
+        // Set the background color to a light gray (similar to the image)
+        scene.background = new THREE.Color(0xaaaaaa);
 
-        // Position the camera
-        camera.position.z = 5;
+        // Position the camera to mimic the isometric view
+        camera.position.set(10, 10, 10);
+        camera.lookAt(0, 0, 0);
+
+        // Add basic lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(5, 10, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 512; // Lower resolution for better performance
+        directionalLight.shadow.mapSize.height = 512;
+        scene.add(directionalLight);
+
+        // Enable shadows with optimization
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Softer shadows for better performance
+
+        // Ground
+        const groundGeometry = new THREE.PlaneGeometry(30, 30, 1, 1); // Low segmentation for performance
+        const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22, roughness: 0.8 });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.position.y = 0;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // River
+        const riverGeometry = new THREE.PlaneGeometry(20, 10, 1, 1);
+        const riverMaterial = new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.5 });
+        const river = new THREE.Mesh(riverGeometry, riverMaterial);
+        river.rotation.x = -Math.PI / 2;
+        river.position.y = -0.1;
+        river.receiveShadow = true;
+        scene.add(river);
+
+        // Canyon walls
+        const canyonShape = new THREE.Shape();
+        canyonShape.moveTo(-10, -5);
+        canyonShape.lineTo(-10, 5);
+        canyonShape.lineTo(-5, 5);
+        canyonShape.lineTo(-5, -5);
+        canyonShape.lineTo(-10, -5);
+
+        const extrudeSettings = { depth: 5, bevelEnabled: false };
+        const canyonGeometry = new THREE.ExtrudeGeometry(canyonShape, extrudeSettings);
+        const canyonMaterial = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 });
+        const canyonLeft = new THREE.Mesh(canyonGeometry, canyonMaterial);
+        canyonLeft.position.set(0, 0, 0);
+        canyonLeft.castShadow = true;
+        canyonLeft.receiveShadow = true;
+        scene.add(canyonLeft);
+
+        const canyonRight = canyonLeft.clone();
+        canyonRight.position.set(10, 0, 0);
+        canyonRight.rotation.y = Math.PI;
+        scene.add(canyonRight);
+
+        // Factory
+        const factoryGeometry = new THREE.BoxGeometry(4, 2, 4);
+        const factoryMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, roughness: 0.6 });
+        const factory = new THREE.Mesh(factoryGeometry, factoryMaterial);
+        factory.position.set(8, 1, 2);
+        factory.castShadow = true;
+        factory.receiveShadow = true;
+        scene.add(factory);
+
+        const solarPanelGeometry = new THREE.PlaneGeometry(3, 3);
+        const solarPanelMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff, metalness: 0.8 });
+        const solarPanel = new THREE.Mesh(solarPanelGeometry, solarPanelMaterial);
+        solarPanel.position.set(8, 2.1, 2);
+        solarPanel.rotation.x = -Math.PI / 2;
+        solarPanel.receiveShadow = true;
+        scene.add(solarPanel);
+
+        const smokestackGeometry = new THREE.CylinderGeometry(0.2, 0.2, 1.5, 8); // Lower segments for performance
+        const smokestackMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const smokestack1 = new THREE.Mesh(smokestackGeometry, smokestackMaterial);
+        smokestack1.position.set(7, 2.5, 1);
+        smokestack1.castShadow = true;
+        scene.add(smokestack1);
+
+        const smokestack2 = smokestack1.clone();
+        smokestack2.position.set(9, 2.5, 1);
+        scene.add(smokestack2);
+
+        // Boat
+        const boatBaseGeometry = new THREE.BoxGeometry(1, 0.3, 0.5);
+        const boatBaseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const boatBase = new THREE.Mesh(boatBaseGeometry, boatBaseMaterial);
+        boatBase.position.set(0, 0.2, 0);
+        boatBase.castShadow = true;
+        scene.add(boatBase);
+
+        const boatCabinGeometry = new THREE.BoxGeometry(0.5, 0.3, 0.3);
+        const boatCabinMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+        const boatCabin = new THREE.Mesh(boatCabinGeometry, boatCabinMaterial);
+        boatCabin.position.set(0, 0.5, 0);
+        boatCabin.castShadow = true;
+        scene.add(boatCabin);
+
+        // Tree
+        const treeFoliageGeometry = new THREE.ConeGeometry(0.5, 1.5, 8);
+        const treeFoliageMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00, roughness: 0.9 });
+        const treeFoliage = new THREE.Mesh(treeFoliageGeometry, treeFoliageMaterial);
+        treeFoliage.position.set(-8, 1.5, -2);
+        treeFoliage.castShadow = true;
+        scene.add(treeFoliage);
+
+        const treeTrunkGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 8);
+        const treeTrunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+        const treeTrunk = new THREE.Mesh(treeTrunkGeometry, treeTrunkMaterial);
+        treeTrunk.position.set(-8, 0.5, -2);
+        treeTrunk.castShadow = true;
+        scene.add(treeTrunk);
+
+        // Wind turbine
+        const turbineBaseGeometry = new THREE.CylinderGeometry(0.1, 0.1, 3, 8);
+        const turbineBaseMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const turbineBase = new THREE.Mesh(turbineBaseGeometry, turbineBaseMaterial);
+        turbineBase.position.set(-6, 1.5, -4);
+        turbineBase.castShadow = true;
+        scene.add(turbineBase);
+
+        const turbineBladesGeometry = new THREE.BoxGeometry(0.1, 2, 0.1);
+        const turbineBladesMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const turbineBlades = new THREE.Mesh(turbineBladesGeometry, turbineBladesMaterial);
+        turbineBlades.position.set(-6, 3, -4);
+        turbineBlades.castShadow = true;
+        scene.add(turbineBlades);
 
         // Animation loop
         function animate() {
             requestAnimationFrame(animate);
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
+
+            // Animate the boat (move it back and forth along the river)
+            boatBase.position.x = Math.sin(Date.now() * 0.001) * 5;
+            boatCabin.position.x = boatBase.position.x;
+
+            // Animate the wind turbine blades
+            turbineBlades.rotation.z += 0.05;
+
             renderer.render(scene, camera);
         }
         animate();
+
+        // Handle window resizing for responsiveness
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        });
+
+        // Optimize for touch devices (basic camera control)
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+
+        window.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            previousMousePosition = { x: e.clientX, y: e.clientY };
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaMove = {
+                    x: e.clientX - previousMousePosition.x,
+                    y: e.clientY - previousMousePosition.y
+                };
+                camera.position.x += deltaMove.x * 0.02;
+                camera.position.z += deltaMove.y * 0.02;
+                camera.lookAt(0, 0, 0);
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        // Touch support for mobile devices
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) {
+                const deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+                camera.position.x += deltaMove.x * 0.02;
+                camera.position.z += deltaMove.y * 0.02;
+                camera.lookAt(0, 0, 0);
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }
+        });
+
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
     </script>
 </body>
 </html>
